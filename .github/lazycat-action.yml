@@ -38,8 +38,20 @@ stores:
     application:
       language: zh
       name: Codex Proxy RS
+      brief: 面向 Codex 的自托管多账号 AI 网关
+      description: |
+        自托管多账号 AI 网关：集中管理 OpenAI / xAI 账号与密钥，统一调度配额与
+        并发，为 Codex CLI / 桌面端提供 Responses API 代理。支持账号分组、
+        客户端密钥、用量统计与健康时间线。
+      keywords: codex, ai, gateway, proxy, responses, openai, xai
       source: https://github.com/zyycn/codex-proxy-rs
       source_author: zyycn
+      support_pc: true
+      screenshot_pc_files:
+        - .github/screenshots/pc-1-dashboard.png
+        - .github/screenshots/pc-2-accounts.png
+        - .github/screenshots/pc-3-keys.png
+        - .github/screenshots/pc-4-settings.png
   private:
     enabled: true
     skip_if_version_exists: true

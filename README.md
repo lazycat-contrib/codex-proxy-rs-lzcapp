@@ -28,7 +28,7 @@
 
 ## 关键实现
 
-- **密码体系**：PostgreSQL / Redis 密码通过 `stable_secret + sha256sum + substr` 生成为 48 位十六进制（应用强制校验），管理员初始密码支持部署参数自定义或自动生成，并通过 `simple-inject-password` 免密登录。
+- **密码体系**：管理员初始密码由设置向导生成（`$random(len=16)`，必填），PostgreSQL / Redis 密码通过 `stable_secret + sha256sum + substr` 生成为 48 位十六进制（应用强制校验）。登录页由 `simple-inject-password` 自动填充（`auth_required: false`，显式选择器），免密登录。
 - **配置文件**：`config.yaml` 由 `setup_script` 在容器启动时生成（含密码渲染），无需挂载文件。
 - **文件选择器**：账号导入需上传 JSON 文件，已接入懒猫网盘文件选择器拦截（`lzc-file-chooser-inject.js`）。
 - **在线更新**：容器内自更新已禁用（`CPR_UPDATE_REPOSITORY` 不配置），版本由 LPK 渠道统一管理。

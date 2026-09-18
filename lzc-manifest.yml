@@ -8,13 +8,16 @@ application:
       backend: http://codex-proxy-rs:8080/
   injects:
     - id: login-autofill
+      auth_required: false
       when:
         - /login
       do:
         - src: builtin://simple-inject-password
           params:
             user: admin@cpr.local
-            password: '{{ .U.admin_password | default (stable_secret "admin_password") | sha256sum | substr 0 20 }}'
+            password: '{{ .U.admin_password }}'
+            userSelector: 'input[name="username"]'
+            passwordSelector: 'input[name="password"]'
     - id: open-save-chooser
       on: browser
       when:
@@ -98,7 +101,7 @@ services:
       admin:
         session_ttl_minutes: 1440
         default_username: admin@cpr.local
-        default_password: {{ .U.admin_password | default (stable_secret "admin_password") | sha256sum | substr 0 20 }}
+        default_password: {{ .U.admin_password }}
       client:
         session_ttl_minutes: 1440
       api:
