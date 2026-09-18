@@ -1,0 +1,47 @@
+version: 1
+
+project:
+  root: .
+  build_config: lzc-build.yml
+  package_file: package.yml
+  output: dist/codex-proxy-rs.lpk
+  target_arch: amd64
+
+update:
+  strategy: publish
+  allow_downgrade: false
+  version_source:
+    type: image
+    image: codex-proxy-rs
+
+build:
+  run_buildscript: false
+
+images:
+  # 版本源镜像：上游 ghcr 纯 SemVer tag（不带 v 前缀），随 v3.x 家族自动更新
+  - id: codex-proxy-rs
+    target: service
+    service: codex-proxy-rs
+    source: ghcr.io/zyycn/codex-proxy-rs
+    channel: stable
+    sort: semver
+    tag_regex: '^\d+\.\d+\.\d+$'
+    delivery:
+      mode: lazycat
+
+stores:
+  official:
+    enabled: true
+    skip_if_version_exists: true
+    changelog_locales: [zh, en]
+    create_if_missing: true
+    application:
+      language: zh
+      name: Codex Proxy RS
+      source: https://github.com/zyycn/codex-proxy-rs
+      source_author: zyycn
+  private:
+    enabled: true
+    skip_if_version_exists: true
+    name: Codex Proxy RS
+    summary: 面向 Codex 的自托管多账号 AI 网关

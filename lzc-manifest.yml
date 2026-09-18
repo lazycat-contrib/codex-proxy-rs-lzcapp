@@ -1,0 +1,140 @@
+application:
+  subdomain: codex-proxy
+  multi_instance: false
+  public_path:
+    - /
+  upstreams:
+    - location: /
+      backend: http://codex-proxy-rs:8080/
+  injects:
+    - id: login-autofill
+      when:
+        - /login
+      do:
+        - src: builtin://simple-inject-password
+          params:
+            user: admin@cpr.local
+            password: {{ .U.admin_password | default (stable_secret "admin_password" | sha256sum | substr 0 20) | quote }}
+    - id: open-save-chooser
+      on: browser
+      when:
+        - /*
+      do:
+        - src: file:///lzcapp/pkg/content/lazycat-injects/lzc-file-chooser-inject.js
+
+services:
+  postgres:
+    # upstream: library/postgres:18-bookworm@sha256:d9c83446333daec3f0588cc709adb80c26090b7f9f0f7ec8d43c243385d79818
+    image: registry.lazycat.cloud/czyt/library/postgres:54d524439a17cc53
+    environment:
+      - TZ=Asia/Shanghai
+      - POSTGRES_DB=codex_proxy
+      - POSTGRES_USER=codex_proxy
+      - POSTGRES_PASSWORD={{ stable_secret "db_password" | sha256sum | substr 0 48 }}
+    command: postgres -c timezone=Asia/Shanghai -c log_timezone=Asia/Shanghai
+    binds:
+      - /lzcapp/var/postgres:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U codex_proxy -d codex_proxy
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    # upstream: library/redis:8-alpine@sha256:9d317178eceac8454a2284a9e6df2466b93c745529947f0cd42a0fa9609d7005
+    image: registry.lazycat.cloud/czyt/library/redis:6499dbd6e967c8f4
+    command: redis-server --appendonly yes --requirepass {{ stable_secret "redis_password" | sha256sum | substr 0 48 }}
+    binds:
+      - /lzcapp/var/redis:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli --no-auth-warning -a {{ stable_secret "redis_password" | sha256sum | substr 0 48 }} ping
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  codex-proxy-rs:
+    # upstream: ghcr.io/zyycn/codex-proxy-rs:3.10.0
+    image: registry.lazycat.cloud/czyt/zyycn/codex-proxy-rs:76294174feaff2b3
+    user: "10001:10001"
+    depends_on:
+      - postgres
+      - redis
+    binds:
+      - /lzcapp/var/data:/app/.runtime/data
+      - /lzcapp/var/logs:/app/.runtime/logs
+    setup_script: |
+      mkdir -p /app/deploy
+      cat > /app/deploy/config.yaml <<'CPR_EOF'
+      schema_version: 1
+      host:
+        listen:
+          host: 0.0.0.0
+          port: 8080
+        runtime_data_dir: /app/.runtime/data
+        logging:
+          level: info
+          stdout: true
+          file:
+            enabled: true
+            directory: /app/.runtime/logs
+            retention_days: 7
+            max_file_size_mb: 20
+        drain_timeout_seconds: 30
+        worker_shutdown_timeout_seconds: 30
+      store:
+        database:
+          url: postgres://codex_proxy@postgres:5432/codex_proxy
+          password: {{ stable_secret "db_password" | sha256sum | substr 0 48 }}
+        redis:
+          url: redis://redis:6379/
+          password: {{ stable_secret "redis_password" | sha256sum | substr 0 48 }}
+        pool:
+          max_connections: 20
+          acquire_timeout_seconds: 5
+      admin:
+        session_ttl_minutes: 1440
+        default_username: admin@cpr.local
+        default_password: {{ .U.admin_password | default (stable_secret "admin_password" | sha256sum | substr 0 20) | quote }}
+      client:
+        session_ttl_minutes: 1440
+      api:
+        asset_directory: /app/web/dist
+        cors_allowed_origins: []
+        request_timeout_seconds: null
+        request_id_header: x-request-id
+      openai:
+        wire_profile:
+          originator: 'Codex Desktop'
+          codex_version: '0.153.4'
+          desktop_version: '26.901.51231'
+          desktop_build: '8109'
+          os_type: 'Mac OS'
+          os_version: '15.7.1'
+          arch: 'arm64'
+          terminal: 'unknown'
+          residency: us
+          verified_at: '2026-09-06T11:26:12.084+08:00'
+      xai:
+        wire_profile:
+          client_identifier: 'GrokShell'
+          client_version: '1.0.13'
+          client_mode: 'headless'
+          target_os: 'linux'
+          target_arch: 'x86_64'
+          verified_at: '2026-08-31T00:00:00+08:00'
+      CPR_EOF
+      chown -R 10001:10001 /app/.runtime /app/deploy
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fsS
+        - http://127.0.0.1:8080/healthz
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
