@@ -14,7 +14,7 @@ application:
         - src: builtin://simple-inject-password
           params:
             user: admin@cpr.local
-            password: {{ .U.admin_password | default (stable_secret "admin_password" | sha256sum | substr 0 20) | quote }}
+            password: '{{ .U.admin_password | default (stable_secret "admin_password") | sha256sum | substr 0 20 }}'
     - id: open-save-chooser
       on: browser
       when:
@@ -98,7 +98,7 @@ services:
       admin:
         session_ttl_minutes: 1440
         default_username: admin@cpr.local
-        default_password: {{ .U.admin_password | default (stable_secret "admin_password" | sha256sum | substr 0 20) | quote }}
+        default_password: {{ .U.admin_password | default (stable_secret "admin_password") | sha256sum | substr 0 20 }}
       client:
         session_ttl_minutes: 1440
       api:

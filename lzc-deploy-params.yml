@@ -2,7 +2,7 @@ params:
   - id: admin_password
     type: secret
     name: "Admin Password"
-    description: "Initial admin password (at least 12 chars, must not contain $). Leave empty to auto-generate."
+    description: "Initial admin password (min 12 chars, no $). Custom value is SHA-256 hashed to a 20-char hex initial password; leave empty to auto-generate."
     default_value: ""
     optional: true
 
@@ -10,4 +10,4 @@ locales:
   zh:
     admin_password:
       name: "管理员密码"
-      description: "管理员初始密码（至少 12 位，不能包含 $；留空自动生成）"
+      description: "管理员初始密码（至少 12 位，不能包含 $）。自定义值会经 SHA-256 处理为 20 位十六进制初始密码；留空自动生成"
