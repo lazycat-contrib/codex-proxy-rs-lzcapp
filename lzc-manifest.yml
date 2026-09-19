@@ -24,7 +24,6 @@ application:
         - /*
       do:
         - src: file:///lzcapp/pkg/content/lazycat-injects/lzc-file-chooser-inject.js
-
 services:
   postgres:
     # upstream: library/postgres:18-bookworm@sha256:d9c83446333daec3f0588cc709adb80c26090b7f9f0f7ec8d43c243385d79818
@@ -44,7 +43,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
   redis:
     # upstream: library/redis:8-alpine@sha256:9d317178eceac8454a2284a9e6df2466b93c745529947f0cd42a0fa9609d7005
     image: registry.lazycat.cloud/czyt/library/redis:6499dbd6e967c8f4
@@ -58,10 +56,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
   codex-proxy-rs:
-    # upstream: ghcr.io/zyycn/codex-proxy-rs:3.10.0
-    image: registry.lazycat.cloud/czyt/zyycn/codex-proxy-rs:76294174feaff2b3
+    # upstream: ghcr.io/zyycn/codex-proxy-rs:3.11.0
+    image: registry.lazycat.cloud/czyt/zyycn/codex-proxy-rs:37483265d86cfbf1
     user: "10001:10001"
     depends_on:
       - postgres
