@@ -1,5 +1,5 @@
 package: cloud.lazycat.app.codex-proxy-rs
-version: 3.13.1
+version: 3.14.1
 name: Codex Proxy RS
 description: "面向 Codex 的自托管多账号 AI 网关"
 min_os_version: "1.5.0"
