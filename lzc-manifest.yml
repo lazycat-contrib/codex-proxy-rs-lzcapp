@@ -57,8 +57,8 @@ services:
       timeout: 5s
       retries: 10
   codex-proxy-rs:
-    # upstream: ghcr.io/zyycn/codex-proxy-rs:3.18.3
-    image: registry.lazycat.cloud/czyt/zyycn/codex-proxy-rs:4f6177eb48bfb290
+    # upstream: ghcr.io/zyycn/codex-proxy-rs:3.19.0
+    image: registry.lazycat.cloud/czyt/zyycn/codex-proxy-rs:7397a699d999a55d
     user: "10001:10001"
     depends_on:
       - postgres
